@@ -29,22 +29,7 @@ exports.addRating = async (req, res) => {
             res.status(201).json({ message: 'Rating added successfully' })
             count++
             console.log(count)
-            if (count % 5 == 0 && count > 0) {
-              axios
-                .post(
-                  'https://product-service-sda.herokuapp.com/product/sync',
-                  {
-                    firstName: 'Fred',
-                    lastName: 'Flintstone',
-                  }
-                )
-                .then(res => {
-                  console.log(res)
-                })
-                .catch(err => {
-                  console.log(err)
-                })
-            }
+            if (count % 5 == 0 && count > 0) getLatestRatings()
           })
           .catch(err => {
             console.error(err)
@@ -65,6 +50,54 @@ exports.addRating = async (req, res) => {
             })
         })
       }
+    })
+    .catch(err => {
+      console.error(err)
+      res.status(500).json({ error: err.code })
+    })
+}
+
+// Get latest ratings
+const getLatestRatings = (req, res) => {
+  db.collection('ratings')
+    .get()
+    .then(data => {
+      let ratings = []
+      data.forEach(doc => {
+        const ratingData = doc.data()
+        ratings.push({
+          rating: ratingData.rating,
+          productId: ratingData.productId,
+        })
+      })
+      // Calculate the sums and group data (while tracking count)
+      const reduced = ratings.reduce((m, d) => {
+        if (!m[d.productId]) {
+          m[d.productId] = { ...d, count: 1 }
+          return m
+        }
+        m[d.productId].rating += d.rating
+        m[d.productId].count += 1
+        return m
+      }, {})
+
+      // Create new array from grouped data and compute the average
+      const result = Object.keys(reduced).map(k => {
+        const item = reduced[k]
+        return {
+          productId: item.productId,
+          averageRating: item.rating / item.count,
+          numberOfRaters: item.count,
+        }
+      })
+      axios
+        .post('https://product-service-sda.herokuapp.com/product/sync', result)
+        .then(res => {
+          console.log(res)
+        })
+        .catch(err => {
+          console.log(err)
+        })
     })
     .catch(err => {
       console.error(err)
