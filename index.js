@@ -2,12 +2,13 @@ const app = require('express')()
 const jsonParser = require('body-parser').json()
 // const cors = require('cors')()
 
-const { addRating } = require('./ratings')
+const { addRating, getAllRatings } = require('./ratings')
 
 app.use(jsonParser)
 
 // Rating routes
 app.post('/rate', addRating)
+app.get('/rating/list', getAllRatings)
 
 //Testing
 app.get('/', (req, res) => {

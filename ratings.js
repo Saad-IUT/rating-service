@@ -57,6 +57,28 @@ exports.addRating = async (req, res) => {
     })
 }
 
+//Get all ratings
+exports.getAllRatings = (req, res) => {
+  db.collection('ratings')
+    .get()
+    .then(data => {
+      let ratings = []
+      data.forEach(doc => {
+        const ratingData = doc.data()
+        ratings.push({
+          productId: ratingData.productId,
+          raterId: ratingData.raterId,
+          rating: ratingData.rating,
+        })
+      })
+      return res.json(ratings)
+    })
+    .catch(err => {
+      console.error(err)
+      res.status(500).json({ error: err.code })
+    })
+}
+
 // Get latest ratings
 const getLatestRatings = (req, res) => {
   db.collection('ratings')
