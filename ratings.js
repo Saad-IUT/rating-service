@@ -1,7 +1,14 @@
 const { db } = require('./admin')
+const axios = require('axios')
 
 // Add Rating
-exports.addRating = (req, res) => {
+exports.addRating = async (req, res) => {
+  let count = await db
+    .collection('ratings')
+    .get()
+    .then(snapshot => {
+      return snapshot.size
+    })
   const ratingRef = db.collection('ratings')
   const rating = req.body
   const newRating = {
@@ -20,6 +27,24 @@ exports.addRating = (req, res) => {
           .add(newRating)
           .then(() => {
             res.status(201).json({ message: 'Rating added successfully' })
+            count++
+            console.log(count)
+            if (count % 5 == 0 && count > 0) {
+              axios
+                .post(
+                  'https://product-service-sda.herokuapp.com/product/sync',
+                  {
+                    firstName: 'Fred',
+                    lastName: 'Flintstone',
+                  }
+                )
+                .then(res => {
+                  console.log(res)
+                })
+                .catch(err => {
+                  console.log(err)
+                })
+            }
           })
           .catch(err => {
             console.error(err)
@@ -31,6 +56,7 @@ exports.addRating = (req, res) => {
           db.doc(`/ratings/${id}`)
             .update({ rating: rating.rating })
             .then(() => {
+              console.log(count)
               return res.json({ message: 'Rating updated successfully' })
             })
             .catch(err => {
