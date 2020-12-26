@@ -1,6 +1,5 @@
 const app = require('express')()
 const jsonParser = require('body-parser').json()
-// const cors = require('cors')()
 
 const { addRating, getAllRatings } = require('./ratings')
 

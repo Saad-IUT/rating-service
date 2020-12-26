@@ -57,7 +57,7 @@ exports.addRating = async (req, res) => {
     })
 }
 
-//Get all ratings
+// Get all ratings
 exports.getAllRatings = (req, res) => {
   db.collection('ratings')
     .get()
@@ -67,8 +67,8 @@ exports.getAllRatings = (req, res) => {
         const ratingData = doc.data()
         ratings.push({
           productId: ratingData.productId,
-          raterId: ratingData.raterId,
           rating: ratingData.rating,
+          raterId: ratingData.raterId,
         })
       })
       return res.json(ratings)
